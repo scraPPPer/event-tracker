@@ -58,17 +58,63 @@ else:
 
     st.divider()
 
-    # ANALYSE
-    df = run_query()
-    if not df.empty:
-        # Datum formatieren
-        df['event_date'] = pd.to_datetime(df['event_date'])
-        df['Wochentag'] = df['event_date'].dt.day_name()
-        
-        st.subheader("Deine Statistik")
-        st.bar_chart(df['Wochentag'].value_counts())
-        
-        st.write("Historie:")
+    # --- 4. ANALYSE & INTELLIGENZ ---
+df = run_query()
+
+if not df.empty:
+    # 1. Datenaufbereitung
+    df['event_date'] = pd.to_datetime(df['event_date'])
+    df = df.sort_values(by='event_date') # Wichtig: Chronologisch sortieren
+    
+    # Neue Spalten für die Analyse berechnen
+    df['Wochentag'] = df['event_date'].dt.day_name()
+    df['Monat'] = df['event_date'].dt.month_name()
+    df['Jahr'] = df['event_date'].dt.year
+    
+    # Berechne Tage seit dem letzten Ereignis (Intervall)
+    df['Tage_seit_letztem'] = df['event_date'].diff().dt.days
+
+    # --- DASHBOARD ---
+    st.divider()
+    st.header("📊 Deine Analyse")
+    
+    # KPIs (Key Performance Indicators)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Gesamtanzahl", len(df))
+    
+    if len(df) > 1:
+        avg_days = df['Tage_seit_letztem'].mean()
+        last_event = df['event_date'].iloc[-1].strftime("%d.%m.%Y")
+        col2.metric("Durchschn. Abstand", f"{avg_days:.1f} Tage")
+        col3.metric("Letztes Ereignis", last_event)
+    
+    # --- VISUALISIERUNG 1: Die "Mittwochs im Mai"-Matrix ---
+    st.subheader("Wann passiert es am häufigsten?")
+    st.caption("Je dunkler das Feld, desto mehr Ereignisse.")
+    
+    # Wir erstellen eine Kreuztabelle (Heatmap-Daten)
+    # Zeilen: Wochentage, Spalten: Monate
+    heatmap_data = pd.crosstab(
+        df['Wochentag'], 
+        df['Monat']
+    )
+    
+    # Wochentage sortieren (damit Montag oben ist, nicht alphabetisch)
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    # Nur sortieren, wenn die Tage auch in den Daten vorkommen
+    existing_days = [d for d in days_order if d in heatmap_data.index]
+    heatmap_data = heatmap_data.reindex(existing_days)
+    
+    # Als bunte Tabelle anzeigen (Streamlit highlight_max)
+    st.dataframe(heatmap_data.style.background_gradient(cmap="Blues"), use_container_width=True)
+
+    # --- VISUALISIERUNG 2: Verlauf ---
+    st.subheader("Zeitlicher Verlauf")
+    st.line_chart(df.set_index('event_date')['event_name'].value_counts().resample('D').sum().fillna(0))
+
+    # --- ROHDATEN ---
+    with st.expander("Alle Daten anzeigen"):
         st.dataframe(df)
-    else:
-        st.info("Noch keine Daten in der Datenbank.")
+
+else:
+    st.info("Noch keine Daten vorhanden. Trage oben dein erstes Ereignis ein!")
