@@ -111,8 +111,8 @@ if not df.empty:
     # --- VISUALISIERUNG 2: Verlauf ---
     st.subheader("Zeitlicher Verlauf")
     # Wir setzen das Datum als Index, gruppieren nach Tagen (D) und zählen die Größe (size) der Gruppen
-daily_counts = df.set_index('event_date').resample('D').size()
-st.line_chart(daily_counts)
+    daily_counts = df.set_index('event_date').resample('D').size()
+    st.line_chart(daily_counts)
 
     # --- ROHDATEN ---
     with st.expander("Alle Daten anzeigen"):
