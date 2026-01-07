@@ -36,7 +36,7 @@ def save_entry(name, date_obj, notes):
     client.table("events").insert(data).execute()
 
 # --- APP ---
-st.title("☁️ Cloud Event Tracker")
+st.title("☁️ scraPPPers Event-Tracker")
 
 client = init_connection()
 
