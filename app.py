@@ -116,12 +116,8 @@ if not df.empty:
     active_days = [d for d in sort_order_days if d in heatmap_data.index]
     heatmap_data = heatmap_data.reindex(active_days)
     
-    # 3. Darstellung
-    # use_container_width=True zieht es auf die volle Breite
-    st.dataframe(
-        heatmap_data.style.background_gradient(cmap="Reds", axis=None).format("{:.0f}"), 
-        use_container_width=True
-    )
+    # 3. Darstellung (TEST-MODUS: Ohne Farben)
+    st.dataframe(heatmap_data, use_container_width=True)
     
     # "Insight" Text generieren (Wo ist das Maximum?)
     if not heatmap_data.empty:
