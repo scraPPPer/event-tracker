@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client
 import datetime
+from datetime import timedelta
 
 # --- KONFIGURATION ---
 # Trage hier deine Daten von Supabase ein (Project URL und Anon Key)
